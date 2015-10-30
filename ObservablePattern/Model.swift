@@ -12,8 +12,8 @@ class Model {
 
     static let sharedInstance = Model()
 
-    let currentDate = ObservableProperty(NSDate())
-
+    let currentDate = ObservableProperty<NSDate>(NSDate())
+    
     init() {
         tick()
     }

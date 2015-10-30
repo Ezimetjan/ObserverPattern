@@ -16,7 +16,7 @@ class ViewController: NSViewController {
         super.viewDidLoad()
 
         let model = Model.sharedInstance
-        model.currentDate.observable.registerObserver(self) {
+        model.currentDate.registerObserver(self) {
             [weak self] in
             self?.label?.objectValue = model.currentDate.value
         }

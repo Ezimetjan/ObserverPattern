@@ -8,44 +8,51 @@
 
 import Foundation
 
-public class ObservableProperty <ValueType> {
+typealias ObservableCallback = Void -> Void
 
-    public var value: ValueType {
-        didSet {
-            observable.notifyObservers()
-        }
-    }
-    public var observable = Observable()
-
-    init(_ value: ValueType) {
-        self.value = value
-    }
+protocol ObservableType {
+    typealias ValueType
+    var value: ValueType { get set }
+    var observers: NSMapTable { get }
+    
+    func registerObserver(observer: AnyObject, closure: ObservableCallback)
+    func unregisterObserver(observer: AnyObject)
+    func notifyObservers()
+    
+    init(_ value: ValueType)
 }
 
-// MARK: -
-
-public class Observable {
-
-    public typealias Callback = Void -> Void
-
-    public let observers: NSMapTable = NSMapTable.weakToStrongObjectsMapTable()
-
-    public func registerObserver(observer: AnyObject, closure: Callback) {
+extension ObservableType {
+    func registerObserver(observer: AnyObject, closure: ObservableCallback) {
         observers.setObject(Box(closure), forKey: observer)
     }
-
-    public func unregisterObserver(observer: AnyObject) {
+    
+    func unregisterObserver(observer: AnyObject) {
         observers.removeObjectForKey(observer)
     }
-
-    public func notifyObservers() {
+    
+    func notifyObservers() {
         let boxes = observers.map() {
             (key, value) in
-            return value as! Box <Callback>
+            return value as! Box <ObservableCallback>
         }
         boxes.forEach() {
             $0.value()
         }
+    }
+}
+
+class ObservableProperty <ValueType>: ObservableType {
+    let observers = NSMapTable.weakToStrongObjectsMapTable()
+    
+    var value: ValueType {
+        didSet {
+            notifyObservers()
+        }
+    }
+    
+    required init(_ value: ValueType) {
+        self.value = value
     }
 }
 
